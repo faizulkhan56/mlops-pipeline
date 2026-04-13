@@ -1,0 +1,9 @@
+name: mlops-pipeline
+runtime: python
+description: MLOps Pipeline Infrastructure with AWS
+template:
+  description: A complete MLOps infrastructure setup
+  config:
+    aws:region:
+      description: The AWS region to deploy into
+      default: ap-southeast-1
