@@ -37,21 +37,22 @@ jobs:
             python -m pytest tests/ -v --tb=short
           else
             echo "Tests directory not found, running basic health test..."
-            python -c "
-import sys
-sys.path.insert(0, '.')
-try:
-    from app import app
-    print('✓ App import successful')
-    client = app.test_client()
-    response = client.get('/health')
-    print(f'✓ Health check: {response.status_code}')
-    assert response.status_code == 200
-    print('✓ Basic health test passed')
-except Exception as e:
-    print(f'✗ Test failed: {e}')
-    sys.exit(1)
-"
+            python - <<EOF
+            import sys
+            sys.path.insert(0, '.')
+
+            try:
+                from app import app
+                print('App import successful')
+                client = app.test_client()
+                response = client.get('/health')
+                print(f'Health check: {response.status_code}')
+                assert response.status_code == 200
+                print('Basic health test passed')
+            except Exception as e:
+                print(f'Test failed: {e}')
+                sys.exit(1)
+            EOF
           fi
 
   deploy-infrastructure:
@@ -216,7 +217,7 @@ except Exception as e:
             done
 
             if [ ! -f /home/ubuntu/setup-info.txt ]; then
-              echo "⚠️ Setup timeout - proceeding with manual setup..."
+              echo "Setup timeout - proceeding with manual setup..."
 
               if ! command -v docker &> /dev/null; then
                 echo "Installing Docker manually..."
@@ -233,7 +234,7 @@ except Exception as e:
                 sudo chmod +x /usr/local/bin/docker-compose
               fi
             else
-              echo "✅ EC2 setup completed successfully!"
+              echo "EC2 setup completed successfully!"
               cat /home/ubuntu/setup-info.txt
             fi
 
@@ -245,9 +246,9 @@ except Exception as e:
             timeout 300 bash -c 'while ! sudo docker info > /dev/null 2>&1; do echo "Waiting for Docker..."; sleep 5; done'
 
             if sudo docker info > /dev/null 2>&1; then
-              echo "✅ Docker is ready!"
+              echo "Docker is ready!"
             else
-              echo "❌ Docker failed to start"
+              echo "Docker failed to start"
               sudo systemctl status docker
               exit 1
             fi
@@ -409,7 +410,7 @@ except Exception as e:
             curl -f http://localhost:9090/-/healthy || (echo "Prometheus health check failed" && exit 1)
             curl -f http://localhost:3000/api/health || (echo "Grafana health check failed" && exit 1)
 
-            echo "✅ Deployment completed successfully!"
+            echo "Deployment completed successfully!"
             echo "ML Inference: http://$(curl -s ifconfig.me):8001/health"
             echo "Data Ingestion: http://$(curl -s ifconfig.me):8002/health"
             echo "Prometheus: http://$(curl -s ifconfig.me):9090"
