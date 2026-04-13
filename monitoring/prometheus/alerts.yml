@@ -1,0 +1,57 @@
+groups:
+  - name: mlops_alerts
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+      
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(data_ingestion_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time on {{ $labels.job }}"
+          description: "95th percentile response time is {{ $value }} seconds"
+      
+      - alert: LowIngestionRate
+        expr: rate(data_ingestion_total[5m]) < 0.01
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low data ingestion rate"
+          description: "Data ingestion service is receiving less than 0.01 requests per second"
+      
+      - alert: LargeDataSize
+        expr: histogram_quantile(0.95, rate(data_size_bytes_bucket[5m])) > 10485760
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Large data payloads detected"
+          description: "95th percentile data size is {{ $value }} bytes (>10MB)"
+      
+      - alert: MLInferenceServiceDown
+        expr: up{job="ml-inference"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ML Inference service is down"
+          description: "ML Inference service has been down for more than 2 minutes"
+      
+      - alert: DataIngestionServiceDown
+        expr: up{job="data-ingestion"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Data Ingestion service is down"
+          description: "Data Ingestion service has been down for more than 2 minutes"
