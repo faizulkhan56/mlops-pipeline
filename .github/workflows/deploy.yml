@@ -37,24 +37,8 @@ jobs:
             python -m pytest tests/ -v --tb=short
           else
             echo "Tests directory not found, running basic health test..."
-            python - <<EOF
-            import sys
-            sys.path.insert(0, '.')
-
-            try:
-                from app import app
-                print('App import successful')
-                client = app.test_client()
-                response = client.get('/health')
-                print(f'Health check: {response.status_code}')
-                assert response.status_code == 200
-                print('Basic health test passed')
-            except Exception as e:
-                print(f'Test failed: {e}')
-                sys.exit(1)
-            EOF
+            python -c "import sys; sys.path.insert(0, '.'); from app import app; print('App import successful'); client=app.test_client(); response=client.get('/health'); print(f'Health check: {response.status_code}'); assert response.status_code==200; print('Basic health test passed')"
           fi
-
   deploy-infrastructure:
     needs: test
     runs-on: ubuntu-latest
