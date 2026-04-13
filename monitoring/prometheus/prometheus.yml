@@ -26,4 +26,3 @@ scrape_configs:
       - targets: ['data-ingestion:8002']
     metrics_path: '/metrics'
     scrape_interval: 10s
-EOF
